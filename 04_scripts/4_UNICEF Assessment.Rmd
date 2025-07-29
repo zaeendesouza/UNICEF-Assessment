@@ -37,9 +37,9 @@ pacman::p_load(
 # Load data
 clean_merge <- here("02_cleaneddata/", "cleaned_merge.xlsx")
 
-analysis_data <- read_excel(clean_merge) %>%
-  filter(merge == "Merged") %>%
-  filter(country_name != "Kosovo (UNSCR 1244)") %>%
+analysis_data <- read_excel(clean_merge) |>
+  filter(merge == "Merged") |>
+  filter(country_name != "Kosovo (UNSCR 1244)") |>
   mutate(
     ontrack = if_else(status == "Acceleration Needed", "Off-track", "On-track"),
     value = as.numeric(value),
@@ -47,7 +47,7 @@ analysis_data <- read_excel(clean_merge) %>%
   )
 
 # Relabel indicators for ease of use
-analysis_data <- analysis_data %>%
+analysis_data <- analysis_data |>
   mutate(indicator = case_when(
     str_detect(indicator, regex("^Antenatal care.*4\\+.*visits", ignore_case = TRUE)) ~ 
       "**Panel A:** % of women who attended at least four ANC checks during pregnancy",
@@ -57,12 +57,12 @@ analysis_data <- analysis_data %>%
   ))
 
 # Weighted mean estimates for the graphs
-mean_df <- analysis_data %>%
-  group_by(year, indicator, ontrack) %>%
+mean_df <- analysis_data |>
+  group_by(year, indicator, ontrack) |>
   summarise(
     weighted_mean_value = weighted.mean(value, wghts, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
+  ) |>
   mutate(weighted_mean_value = weighted_mean_value / 100)
 
 mean_df$ontrack <- factor(mean_df$ontrack, levels = c("On-track", "Off-track"))

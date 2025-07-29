@@ -16,15 +16,15 @@ pacman::p_load(
 
 clean_merge <- here("02_cleaneddata/", "cleaned_merge.xlsx")
 
-analysis_data <- read_excel(clean_merge) %>%
-  filter(merge == "Merged") %>%
-  filter(country_name != "Kosovo (UNSCR 1244)") %>%
+analysis_data <- read_excel(clean_merge) |>
+  filter(merge == "Merged") |>
+  filter(country_name != "Kosovo (UNSCR 1244)") |>
   mutate(ontrack = if_else(status == "Acceleration Needed", "Off-track", "On-track"),
          value = as.numeric(value),
          wghts = as.numeric(wghts))
 
 # relabelling the values to something shorter
-analysis_data <-analysis_data %>%
+analysis_data <-analysis_data |>
   mutate(indicator = case_when(
     str_detect(indicator, regex("^Antenatal care.*4\\+.*visits", ignore_case = TRUE)) ~ "Percentage of women who attended at least four ANC checks during pregnancy",
     str_detect(indicator, regex("^Skilled birth attendant", ignore_case = TRUE)) ~ "Percentage of deliveries attended by skilled health personnel",
@@ -32,13 +32,13 @@ analysis_data <-analysis_data %>%
   ))
 
 # table of means by group / indicator / year
-mean_df <- analysis_data %>%
-  group_by(year, indicator, ontrack) %>%
-  summarise(weighted_mean_value = weighted.mean(value, wghts, na.rm = TRUE), .groups = "drop") %>%
+mean_df <- analysis_data |>
+  group_by(year, indicator, ontrack) |>
+  summarise(weighted_mean_value = weighted.mean(value, wghts, na.rm = TRUE), .groups = "drop") |>
   mutate(weighted_mean_value = weighted_mean_value / 100)
 
 # make a factor with labels for the graph
-mean_df <- mean_df %>%
+mean_df <- mean_df |>
   mutate(ontrack = factor(ontrack,
                           levels = c("On-track", "Off-track")))
 
@@ -126,8 +126,8 @@ ggplot(mean_df, aes(x = factor(year),
 
 # Part 2: closing gap between on track/off track countries
 # using just two years for this one
-skilled_birth_df <- mean_df %>%
-  filter(str_detect(indicator, regex("deliveries", ignore_case = TRUE))) %>%
+skilled_birth_df <- mean_df |>
+  filter(str_detect(indicator, regex("deliveries", ignore_case = TRUE))) |>
   filter(year %in% c(2018, 2022))
 
 

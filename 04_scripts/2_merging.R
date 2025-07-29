@@ -86,10 +86,10 @@ full_data    <- stata_merge(pop_status, clean_health_data, by = "country_name")
 # some summary stats overall - I am handrolling the same estimate in the excel data just to see - ideally this number should match
 
 # means by year, and merge status
-full_data %>%
-  mutate(value = as.numeric(value)) %>%
-  group_by(year, indicator, merge) %>%
-  summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+full_data |>
+  mutate(value = as.numeric(value)) |>
+  group_by(year, indicator, merge) |>
+  summarise(mean_value = mean(value, na.rm = TRUE)) |>
   pivot_wider(
     names_from = year,
     values_from = mean_value,
@@ -98,20 +98,20 @@ full_data %>%
 
 
 #  unique countries by year
-    full_data %>%
-      filter(!is.na(iso3)) %>%
-      group_by(year, merge) %>%
-      summarise(unique_countries = n_distinct(iso3)) %>%
+    full_data |>
+      filter(!is.na(iso3)) |>
+      group_by(year, merge) |>
+      summarise(unique_countries = n_distinct(iso3)) |>
       pivot_wider(
         names_from = year,
         values_from = unique_countries,
         values_fill = 0)
 
 # how recent is the data?
-    full_data %>%
-      mutate(year = as.numeric(year)) %>%                 # Ensure year is numeric
-      filter(!is.na(year), !is.na(value), merge=="Merged") %>%             # Keep only valid rows
-      group_by(indicator) %>%
+    full_data |>
+      mutate(year = as.numeric(year)) |>                 # Ensure year is numeric
+      filter(!is.na(year), !is.na(value), merge=="Merged") |>             # Keep only valid rows
+      group_by(indicator) |>
       summarise(
         sample_size = n(),                                # Count of non-missing rows
         min_year    = min(year, na.rm = TRUE),
