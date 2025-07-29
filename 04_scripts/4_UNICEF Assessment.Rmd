@@ -1,0 +1,175 @@
+---
+title: "UNICEF ASSESSMENT OUTPUT"
+author: "Author X"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    reference_docx: template.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  dpi = 300,
+  fig.width = 12,
+  fig.height = 8
+)
+
+
+rm(list = ls())
+
+if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load(
+  dplyr,
+  readxl,
+  here,
+  tidyverse,
+  ggtext,
+  ggplot2,
+  scales,
+  stringr,
+  ggthemes, install = T)
+
+
+# Load data
+clean_merge <- here("02_cleaneddata/", "cleaned_merge.xlsx")
+
+analysis_data <- read_excel(clean_merge) %>%
+  filter(merge == "Merged") %>%
+  filter(country_name != "Kosovo (UNSCR 1244)") %>%
+  mutate(
+    ontrack = if_else(status == "Acceleration Needed", "Off-track", "On-track"),
+    value = as.numeric(value),
+    wghts = as.numeric(wghts)
+  )
+
+# Relabel indicators for ease of use
+analysis_data <- analysis_data %>%
+  mutate(indicator = case_when(
+    str_detect(indicator, regex("^Antenatal care.*4\\+.*visits", ignore_case = TRUE)) ~ 
+      "**Panel A:** % of women who attended at least four ANC checks during pregnancy",
+    str_detect(indicator, regex("^Skilled birth attendant", ignore_case = TRUE)) ~ 
+      "**Panel B:** % of deliveries attended by skilled health personnel",
+    TRUE ~ indicator
+  ))
+
+# Weighted mean estimates for the graphs
+mean_df <- analysis_data %>%
+  group_by(year, indicator, ontrack) %>%
+  summarise(
+    weighted_mean_value = weighted.mean(value, wghts, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(weighted_mean_value = weighted_mean_value / 100)
+
+mean_df$ontrack <- factor(mean_df$ontrack, levels = c("On-track", "Off-track"))
+
+# some styling for the graphs
+blue_fill <- c(
+  "On-track"  = alpha("#0071bc", 0.75),
+  "Off-track" = alpha("#00a3e0", 0.75)
+)
+
+blue_outline <- c(
+  "On-track" = "#0071bc",
+  "Off-track" = "#00a3e0"
+)
+
+my_theme <- function(base_size = 16, base_family = "sans") {
+  theme_excel_new(base_size = base_size, base_family = base_family) %+replace%
+    theme(
+      plot.title = element_text(face = "bold", 
+                                size = base_size + 12, 
+                                hjust = 0, 
+                                margin = margin(b = 15), 
+                                colour = "black"),
+      plot.subtitle = element_text( 
+                                size = base_size + 4, 
+                                hjust = 0, 
+                                margin = margin(b = 15), 
+                                colour = "black"),
+      legend.position = "bottom",
+      legend.title = element_blank(),
+      legend.text = element_text(size = base_size * 0.8, color = "black"),
+      axis.text.x = element_text(angle = 0, hjust = 0.5, color = "black", size = 15),
+      axis.text.y = element_text(angle = 0, hjust = 0.5, color = "black", size = 15),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      strip.text = element_markdown(color = "black", size = base_size, hjust = 0, margin = margin(t = 10, b = 5)),
+      panel.grid.major.y = element_line(color = "#e4e1e1"),
+      panel.grid.minor = element_blank(),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = "white", color = NA),
+      plot.margin = margin(12, 12, 50, 12), 
+      plot.caption = element_markdown(
+        size = base_size * 0.8,
+        hjust = 0,
+        vjust = 1,
+        margin = margin(t = 12, r = 0, b = 0, l = 0),
+        color = "black",
+        family = base_family
+      )
+    )
+}
+
+mean_df$indicator <- str_wrap(mean_df$indicator, width = 95)
+
+
+
+```
+
+# Introduction
+
+This is my submission for the Household Survey Data Analyst Consultant - Req.
+(581656) position. Below, is my output and brief analysis.
+
+# Figure 1
+
+```{r fig.height=10, fig.width=14}
+ggplot(mean_df, aes(x = factor(year),
+                    y = weighted_mean_value,
+                    fill = ontrack)) +
+  geom_bar(stat = "identity",
+           position = position_dodge(width = 0.9),
+           size = 0.7,
+           aes(color  = ontrack)) +
+  geom_text(aes(label = scales::percent(weighted_mean_value, accuracy = 1)),
+            position  = position_dodge(width = 0.99),
+            vjust     = 1.2,
+            color     = "white",
+            fontface  = "bold",
+            size      = 5,
+            check_overlap   = TRUE,
+            show.legend     = FALSE) +
+  scale_fill_manual(values  = blue_fill) +
+  scale_color_manual(values = blue_outline) +
+  guides(color = "none") +
+  facet_wrap(~ indicator, scales = "fixed", ncol = 1) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.2),
+    labels = percent_format(accuracy = 1)
+  ) +
+  labs(
+    title = "ARE WE CLOSE TO OUR UNDER-5 MORTALITY TARGETS?",
+    subtitle = "Gaps in SBA deliveries have reduced due to Off-track countries getting better, yet the gap in ANC\nattendance has dropped due to On-track countries getting worse",
+    x = "Year",
+    y = "Weighted Mean Value (%)",
+    fill = "On-Track Status",
+    caption = "**Source:** These charts are based on an unbalanced sampled of countries spanning years 2018-2022. The data used in this chart are available for download via the UNICEF<br>Data Warehouse. All figures are weighted using projected births (per thousand) for 2022. Countries that are close to achieving mortality targets are classified as 'On-Track',<br>while 'Off-track' are those that are not."
+  ) +
+  my_theme() +
+  geom_hline(yintercept = 0, color = "black")
+```
+
+# Analysis
+
+Panel A of figure 1 suggests that there has been some measure of convergence between Off and On-track countries with regard to safe deliveries - the safe-delivery gap between these countries comes down from 30 percentage points in 2018 to \~1 percentage point in 2022. However, Panel B, tells a slightly different story - the gap between On/Off-track countries in 2018 was ~30 percentage points. In 2022, Off-track countries are actually 10 percentage points higher - however,the reversal of the gap between these countries seems to be driven by a \~20 percentage point *decrease* in the probability of women in countries classified as On-track getting at least 4 ANC check-ups, rather than a one-way *increase* in probablity of recieving these ANCs checks for women in Off-Track countries.
+
+## Assumptions and Caveats
+This analysis makes the following assumptions - firstly, there is a compositional change in the the sample - between 2018 and 2022, the number of countries included in the sample, decreases by more than 50% - this could be due to the fact that the COVID-19 pandemic may have delayed surveys in many countries, and as such recent data is not available for all countries. For the sake of this analysis, we make assume (indeed, this is a big assumption) that selection into the 2022 sample, is uncorrelated with our outcome of interest.
+
+Second, there is also a small set of countries for whom the names do not match exactly (this is the case for the ISO code as well - one such example, is Kosovo (which is spelt differently across multiple datasets). In the interest of time, I did not make any attempt to clean these names.
