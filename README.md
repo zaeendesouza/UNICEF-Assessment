@@ -9,6 +9,6 @@ This repository is arrnaged in the following way:
 4. `04_scripts`: All R script to load, merge, clean and save data. Also contains the `.Rmd` file to produce the final output
 
 ## How to use it
-Step 1: Load the Rproject file named "UNICEF"<br>
-Step 2: Execute files: `1_import.R`, `2_merging.R`, `3_analysis.R` and `5_Report.R'<br>
+Step 1: Load the Rproject file named "UNICEF" <br>
+Step 2: Execute files: `1_import.R`, `2_merging.R`, `3_analysis.R` and `5_Report.R' <br>
 Step 3: Find the final output in the `03_outputs` folder
