@@ -1,4 +1,4 @@
-# UNICEF Assessment for HH Analyst Position
+# UNICEF Assessment for Household Survey Data Analyst Consultant
 
 ## Overview
 This repository is organized as follows:
