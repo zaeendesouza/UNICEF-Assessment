@@ -1,14 +1,27 @@
 # UNICEF Assessment for HH Analyst Position
 
 ## Overview
-This repository is arrnaged in the following way:
+This repository is organized as follows:
 
-1. `01_rawdata`: All raw data files in xlsx format. These are used as inputs in the script files
-2. `02_cleaneddata`: Folder for all cleaned data in `.xlsx` format - used as inputs in the script files
-3. `03_outputs`: Contains the final output in docx format
-4. `04_scripts`: All R script to load, merge, clean and save data. Also contains the `.Rmd` file to produce the final output
+1. **`01_rawdata`**  
+   Contains all raw data files in `.xlsx` format. These files serve as inputs for the scripts.
 
-## How to use it
-Step 1: Load the Rproject file named "UNICEF" <br>
-Step 2: Execute files: `1_import.R`, `2_merging.R`, `3_analysis.R` and `5_Report.R' <br>
-Step 3: Find the final output in the `03_outputs` folder
+2. **`02_cleaneddata`**  
+   Contains cleaned data files in `.xlsx` format, which are also used as inputs for the scripts.
+
+3. **`03_outputs`**  
+   Stores the final output files in `.docx` format.
+
+4. **`04_scripts`**  
+   Includes all R scripts to load, merge, clean, and save data. Also contains the `.Rmd` file used to generate the final report.
+
+---
+
+## How to Use
+1. Open the R project file named `UNICEF.Rproj`.  
+2. Run the following scripts in order:  
+   - `1_import.R`  
+   - `2_merging.R`  
+   - `3_analysis.R`  
+   - `5_Report.R`  
+3. Locate the final report in the `03_outputs` folder.
