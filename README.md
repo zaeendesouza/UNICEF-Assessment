@@ -3,6 +3,10 @@
 ## Overview
 This repository is organized as follows:
 
+### Setup File:
+The file named `Folder Setup.R` creates the folder structure needed for this - the user will have to edit the main folder path in the file prior to running. Then, open the `UNICEF.Rproj` and run files one at a time. 
+
+
 1. **`01_rawdata`**  
    Contains all raw data files in `.xlsx` format. These files serve as inputs for the scripts.
 
